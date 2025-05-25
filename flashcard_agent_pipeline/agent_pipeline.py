@@ -1,14 +1,14 @@
-from agents.parser import parse_text
-from agents.extractor import extract_facts
-from agents.generator import generate_flashcards
+from flashcard_agent_pipeline.extractor import extract_facts
+from flashcard_agent_pipeline.generator import generate_flashcards
 
-def main():
-    text = parse_text("sample.txt")
+
+def parse_text(file_path: str) -> str:
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def flashcard_pipeline(text: str) -> str:
     facts = extract_facts(text)
     flashcards = generate_flashcards(facts)
 
-    print("Generated Flashcards:\n")
-    print(flashcards)
-
-if __name__ == "__main__":
-    main()
+    return flashcards
