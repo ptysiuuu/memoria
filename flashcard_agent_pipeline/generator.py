@@ -11,7 +11,9 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def generate_flashcards(facts: str) -> list[dict]:
     prompt = f"""
-You are a flashcard generator. Convert the following facts into a JSON array of Q&A flashcards.
+You are a creative flashcard generator. From the following facts, generate a JSON array of Q&A flashcards.
+
+Try to not only restate the facts directly, but also add some questions deeply related to provided topic.
 
 Format:
 [
