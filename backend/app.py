@@ -56,3 +56,22 @@ def extract_from_docx(data: bytes) -> str:
     file_stream = io.BytesIO(data)
     doc = docx.Document(file_stream)
     return "\n".join(p.text for p in doc.paragraphs)
+
+
+@app.post("/upload_generate")
+async def upload_and_generate(file: UploadFile =  File(...)):
+    contents = await file.read()
+    filename = file.filename.lower()
+    text = ""
+
+    if filename.endswith(".pdf"):
+        text = extract_from_pdf(contents)
+    elif filename.endswith(".docx"):
+        text = extract_from_docx(contents)
+    elif filename.endswith(".txt"):
+        text = contents.decode("utf-8")
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+    
+    flashcards = flashcard_pipeline(text)
+    return {"flashcards": flashcards}
