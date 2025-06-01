@@ -7,8 +7,8 @@ def parse_text(file_path: str) -> str:
         return f.read()
 
 
-def flashcard_pipeline(text: str) -> str:
+def flashcard_pipeline(text: str, language: str = 'english') -> str:
     facts = extract_facts(text)
-    flashcards = generate_flashcards(facts)
+    flashcards = generate_flashcards(facts, language)
 
     return flashcards

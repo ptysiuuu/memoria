@@ -1,11 +1,11 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 from flashcard_agent_pipeline.agent_pipeline import flashcard_pipeline
 import fitz
 import docx
 import io
-
 
 app = FastAPI()
 
@@ -21,16 +21,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 class FlashcardRequest(BaseModel):
     text: str
 
-
 @app.post("/flashcard")
-async def create_flashcards(request: FlashcardRequest):
-    flashcards = flashcard_pipeline(request.text)
+async def create_flashcards(
+    request: FlashcardRequest,
+    language: Optional[str] = Header(None)
+):
+    flashcards = flashcard_pipeline(request.text, language=language)
     return {"flashcards": flashcards}
-
 
 @app.post("/extract-text")
 async def extract_text(file: UploadFile = File(...)):
@@ -46,20 +46,20 @@ async def extract_text(file: UploadFile = File(...)):
     else:
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
-
 def extract_from_pdf(data: bytes) -> str:
     pdf = fitz.open(stream=data, filetype="pdf")
     return "\n".join(page.get_text() for page in pdf)
-
 
 def extract_from_docx(data: bytes) -> str:
     file_stream = io.BytesIO(data)
     doc = docx.Document(file_stream)
     return "\n".join(p.text for p in doc.paragraphs)
 
-
-@app.post("/upload_generate")
-async def upload_and_generate(file: UploadFile =  File(...)):
+@app.post("/upload-generate")
+async def upload_and_generate(
+    file: UploadFile = File(...),
+    language: Optional[str] = Header(None)
+):
     contents = await file.read()
     filename = file.filename.lower()
     text = ""
@@ -72,6 +72,6 @@ async def upload_and_generate(file: UploadFile =  File(...)):
         text = contents.decode("utf-8")
     else:
         raise HTTPException(status_code=400, detail="Unsupported file type")
-    
-    flashcards = flashcard_pipeline(text)
+
+    flashcards = flashcard_pipeline(text, language=language)
     return {"flashcards": flashcards}

@@ -15,7 +15,7 @@ Extract concise facts or key points from the following text:
 Facts:
 """
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="o4-mini-2025-04-16",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
