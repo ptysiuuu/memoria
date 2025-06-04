@@ -1,1 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Cal+Sans&display=swap');
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ffffff, #ffb6f5, #ff4ff5);
+    transition: background 0.5s ease;
+}
+
+.dark body {
+    background: linear-gradient(135deg, #1a1a2e, #c400ff, #ff4ff5);
+}
+
+@theme {
+    --font-primary: "Cal Sans", "sans-serif";
+}
+
+@layer utilities {
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.7s ease-out forwards;
+    }
+
+    .animate-fade-in-delay-1 {
+        animation: fade-in 0.7s ease-out 0.3s forwards;
+    }
+
+    .animate-fade-in-delay-2 {
+        animation: fade-in 0.7s ease-out 0.6s forwards;
+    }
+
+    .animate-fade-in-delay-3 {
+        animation: fade-in 0.7s ease-out 0.9s forwards;
+    }
+
+    .animate-fade-in-delay-4 {
+        animation: fade-in 0.7s ease-out 1.2s forwards;
+    }
+
+    .animate-fade-in-delay-5 {
+        animation: fade-in 0.7s ease-out 1.5s forwards;
+    }
+}
