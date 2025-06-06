@@ -1,9 +1,11 @@
 import { useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { ListCollapse, SquarePen } from 'lucide-react';
 
 import FlashcardHoister from "./FlashcardHoister";
 import FlashcardForm from "./FlashcardForm";
+import SideDock from "./SideDock";
 
 const defaultCards = [
     { id: '1', question: "Co to jest React?", answer: "Biblioteka JavaScript do budowania interfejsów użytkownika." },
@@ -23,11 +25,25 @@ const defaultCards = [
     { id: '15', question: "Co to jest asynchroniczny JavaScript?", answer: "Kod, który nie blokuje głównego wątku wykonania programu, pozwalając na kontynuowanie innych operacji." },
 ];
 
-export default function Home() {
+export default function HomeComponent() {
     const [cards, setCards] = useState(defaultCards);
+
+    const dockItems = [
+        {
+            icon: <ListCollapse size={24} />,
+            label: "Show study sets",
+            onClick: () => console.log("Home clicked"),
+        },
+        {
+            icon: <SquarePen size={24} />,
+            label: "Add new study set",
+            onClick: () => setCards([]),
+        },
+    ];
 
     return (
         <div className="flex justify-center items-center max-h-[80vh] pt-30">
+            <SideDock items={dockItems} />
             <AnimatePresence mode="wait">
                 {!cards || cards.length === 0 ? (
                     <motion.div
