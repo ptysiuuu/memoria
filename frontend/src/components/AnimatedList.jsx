@@ -98,7 +98,7 @@ const AnimatedList = ({
     }, [selectedIndex, keyboardNav]);
 
     return (
-        <div className={`relative w-full max-w-2xl mx-auto ${className} font-primary`}>
+        <div className={`relative w-full max-w-5xl mx-auto ${className} font-primary`}>
             <motion.div
                 className="absolute top-0 left-0 right-0 h-[50px] flex items-center justify-center pointer-events-none z-10"
                 initial={{ opacity: 0, y: -20 }}
@@ -133,9 +133,9 @@ const AnimatedList = ({
                             }
                         }}
                     >
-                        <div className={`p-4 bg-[#111] rounded-lg ${selectedIndex === index ? 'bg-[#222]' : ''} ${itemClassName}`}>
-                            <p className="text-white text-lg mb-1">{card.question}</p>
-                            <p className="text-gray-400 text-sm">{card.answer}</p>
+                        <div className={`p-6 md:p-8 lg:p-10 bg-[#111] rounded-lg ${selectedIndex === index ? 'bg-[#222]' : ''} ${itemClassName} w-full h-auto min-h-[120px] flex flex-col justify-center`}>
+                            <p className="text-white text-lg mb-2">{card.question}</p>
+                            <p className="text-gray-400 text-md">{card.answer}</p>
                         </div>
                     </AnimatedItem>
                 ))}

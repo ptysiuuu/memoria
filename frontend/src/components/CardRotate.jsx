@@ -1,19 +1,45 @@
 import { motion, useMotionValue } from "framer-motion";
+import { useState, useEffect } from "react";
 
 function CardRotate({ children, onSendToBack, sensitivity }) {
     const x = useMotionValue(0);
     const y = useMotionValue(0);
+    const [showLabel, setShowLabel] = useState(false);
+    const [isDragQualified, setIsDragQualified] = useState(false);
+
+    const actionThreshold = sensitivity * 0.3;
+
+    useEffect(() => {
+        const unsubscribeX = x.on("change", (latestX) => {
+            const absX = Math.abs(latestX);
+
+            if (absX >= actionThreshold) {
+                setShowLabel(true);
+                setIsDragQualified(true);
+            } else {
+                setShowLabel(false);
+                setIsDragQualified(false);
+            }
+        });
+
+        return () => {
+            unsubscribeX();
+        };
+    }, [x, actionThreshold]);
 
     function handleDragEnd(_, info) {
-        if (
-            Math.abs(info.offset.x) > sensitivity ||
-            Math.abs(info.offset.y) > sensitivity
-        ) {
+        const verticalDragLimit = sensitivity * 0.4;
+        const isVerticalDragDominant = Math.abs(info.offset.y) > verticalDragLimit &&
+            Math.abs(info.offset.y) > Math.abs(info.offset.x);
+
+        if (isDragQualified && !isVerticalDragDominant) {
             onSendToBack();
         } else {
             x.set(0);
             y.set(0);
         }
+        setShowLabel(false);
+        setIsDragQualified(false);
     }
 
     return (
@@ -27,6 +53,17 @@ function CardRotate({ children, onSendToBack, sensitivity }) {
             onDragEnd={handleDragEnd}
         >
             {children}
+
+            <motion.div
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: showLabel ? 1 : 0 }}
+                transition={{ duration: 0.15 }}
+            >
+                <span className="text-white bg-black/70 px-4 py-2 rounded-full text-lg font-bold">
+                    Move to the back
+                </span>
+            </motion.div>
         </motion.div>
     );
 }
