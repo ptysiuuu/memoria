@@ -16,7 +16,7 @@ export default function EditPopup({ initialData, onSave, onClose }) {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
             <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl w-full max-w-md relative shadow-2xl border dark:border-zinc-700">
                 <button
-                    className="absolute top-4 right-4 text-zinc-500 hover:text-red-500"
+                    className="absolute top-4 right-4 text-zinc-500 hover:text-red-500 cursor-pointer"
                     onClick={onClose}
                 >
                     <X />
@@ -56,7 +56,7 @@ export default function EditPopup({ initialData, onSave, onClose }) {
                     </div>
                     <button
                         type="submit"
-                        className="w-full mt-4 px-6 py-3 cursor-pointer rounded-xl font-primary font-medium text-pink-600 border border-pink-400 hover:bg-pink-300 animate-fade-in-delay-5 dark:hover:bg-pink-900 transition"
+                        className="w-full mt-4 px-6 py-3 cursor-pointer rounded-xl font-primary font-medium text-pink-600 border border-pink-400 hover:bg-pink-300 dark:hover:bg-pink-900 transition"
                     >
                         Save
                     </button>
