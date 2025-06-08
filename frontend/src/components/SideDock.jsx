@@ -1,3 +1,4 @@
+// components/SideDock.jsx
 "use client";
 
 import {
@@ -108,6 +109,7 @@ function DockIcon({ children, className = "" }) {
 
 export default function SideDock({
     items,
+    setShowStudySetsDropdown,
     className = "",
     spring = { mass: 0.1, stiffness: 150, damping: 12 },
     magnification = 70,
@@ -117,6 +119,18 @@ export default function SideDock({
 }) {
     const mouseY = useMotionValue(Infinity);
     const isHovered = useMotionValue(0);
+
+    const memoizedItems = useMemo(() => {
+        return items.map(item => {
+            if (item.label === "Show study sets") {
+                return {
+                    ...item,
+                    onClick: () => setShowStudySetsDropdown(prev => !prev),
+                };
+            }
+            return item;
+        });
+    }, [items]);
     return (
         <motion.div
             style={{ scrollbarWidth: "none" }}
@@ -136,7 +150,7 @@ export default function SideDock({
                 role="toolbar"
                 aria-label="Application dock"
             >
-                {items.map((item, index) => (
+                {memoizedItems.map((item, index) => (
                     <DockItem
                         key={index}
                         onClick={item.onClick}
