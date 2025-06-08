@@ -1,12 +1,14 @@
 import { useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ListCollapse, SquarePen } from 'lucide-react';
+import { ListCollapse, SquarePen, CirclePlus } from 'lucide-react';
 
 import FlashcardHoister from "./FlashcardHoister";
 import FlashcardForm from "./FlashcardForm";
 import SideDock from "./SideDock";
 import StudySetsDropdown from './StudySetsDropdown';
+import AddPopup from "./AddPopup";
+
 
 const defaultCards1 = [
     { id: '1', question: "Co to jest React?", answer: "Biblioteka JavaScript do budowania interfejsów użytkownika." },
@@ -39,8 +41,14 @@ export default function HomeComponent() {
     const [studySets, setStudySets] = useState(defaultSets)
     const [activeSetName, setActiveSetName] = useState("Podstawy Reacta");
     const [showStudySetsDropdown, setShowStudySetsDropdown] = useState(false);
+    const [showAddPopup, setShowAddPopup] = useState(false);
 
     const dockItems = [
+        {
+            icon: <CirclePlus size={24} />,
+            label: "Add a flashcard",
+            onClick: () => setShowAddPopup(true),
+        },
         {
             icon: <ListCollapse size={24} />,
             label: "Show study sets",
@@ -53,8 +61,25 @@ export default function HomeComponent() {
         },
     ];
 
+    const handleAddFlashcard = (newCard) => {
+        setCards(prev => [...prev, newCard]);
+        setStudySets(prev =>
+            prev.map(set =>
+                set.name === activeSetName
+                    ? { ...set, cards: [...set.cards, newCard] }
+                    : set
+            )
+        );
+    };
+
     return (
         <div className="grid grid-cols-[auto_1fr] h-[80vh] overflow-hidden">
+            {showAddPopup && (
+                <AddPopup
+                    onSave={handleAddFlashcard}
+                    onClose={() => setShowAddPopup(false)}
+                />
+            )}
             <div className="relative flex justify-center items-center h-full py-4">
                 <SideDock
                     items={dockItems}
