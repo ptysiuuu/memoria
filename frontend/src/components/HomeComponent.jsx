@@ -37,6 +37,7 @@ const defaultSets = [
 export default function HomeComponent() {
     const [cards, setCards] = useState(defaultCards1);
     const [studySets, setStudySets] = useState(defaultSets)
+    const [activeSetName, setActiveSetName] = useState("Podstawy Reacta");
     const [showStudySetsDropdown, setShowStudySetsDropdown] = useState(false);
 
     const dockItems = [
@@ -53,7 +54,7 @@ export default function HomeComponent() {
     ];
 
     return (
-        <div className="grid grid-cols-[auto_1fr] h-screen overflow-hidden">
+        <div className="grid grid-cols-[auto_1fr] h-[80vh] overflow-hidden">
             <div className="relative flex justify-center items-center h-full py-4">
                 <SideDock
                     items={dockItems}
@@ -67,6 +68,7 @@ export default function HomeComponent() {
                         <StudySetsDropdown
                             studySets={studySets}
                             setCards={setCards}
+                            setActiveSetName={setActiveSetName}
                             onClose={() => setShowStudySetsDropdown(false)}
                         />
                     )}
@@ -92,7 +94,7 @@ export default function HomeComponent() {
                             transition={{ duration: 0.3 }}
                             className="flex justify-center w-full"
                         >
-                            <FlashcardHoister cards={cards} setCards={setCards} />
+                            <FlashcardHoister cards={cards} setCards={setCards} activeSetName={activeSetName} />
                         </motion.div>
                     )}
                 </AnimatePresence>

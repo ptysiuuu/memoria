@@ -7,7 +7,7 @@ import Stack from "./Stack";
 import AnimatedList from "./AnimatedList";
 import EditPopup from "./EditPopup";
 
-export default function FlashcardHoister({ cards, setCards }) {
+export default function FlashcardHoister({ cards, setCards, activeSetName }) {
     const [enabled, setEnabled] = useState(false);
     const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
     const [selectedCardToEdit, setSelectedCardToEdit] = useState(null);
@@ -39,7 +39,12 @@ export default function FlashcardHoister({ cards, setCards }) {
 
     return (
         <div className="w-full max-w-6xl mx-auto flex flex-col items-center font-primary">
-            <div className="mb-8 flex items-center space-x-4">
+            {activeSetName && (
+                <h2 className="text-2xl font-primary mb-4 text-gray-800 dark:text-gray-200 text-center">
+                    Set: {activeSetName}
+                </h2>
+            )}
+            <div className="mb-2 flex items-center space-x-4">
                 <span className={`text-lg font-medium ${!enabled ? 'text-green-700' : 'text-gray-400'}`}>
                     Mode: List
                 </span>
@@ -80,7 +85,7 @@ export default function FlashcardHoister({ cards, setCards }) {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -50 }}
                         transition={{ duration: 0.3 }}
-                        className="w-full"
+                        className="max-w-4xl mx-auto"
                     >
                         <Stack cards={cards} setCards={setCards} />
                     </motion.div>

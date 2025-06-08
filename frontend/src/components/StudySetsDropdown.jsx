@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-export default function StudySetsDropdown({ studySets, setCards, onClose }) {
+export default function StudySetsDropdown({ studySets, setCards, onClose, setActiveSetName }) {
     if (!studySets || studySets.length === 0) {
         return null;
     }
@@ -27,6 +27,7 @@ export default function StudySetsDropdown({ studySets, setCards, onClose }) {
                     className="w-full text-left px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer rounded-md transition duration-150 ease-in-out"
                     onClick={() => {
                         setCards(set.cards);
+                        setActiveSetName(set.name);
                         onClose();
                     }}
                     role="menuitem"
