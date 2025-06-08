@@ -58,7 +58,10 @@ def extract_from_docx(data: bytes) -> str:
 @app.post("/upload-generate")
 async def upload_and_generate(
     file: UploadFile = File(...),
-    language: Optional[str] = Header(None)
+    language: Optional[str] = Header(None),
+    detail_level: Optional[int] = Header(None, alias="detail-level"),
+    keywords: Optional[str] = Header(None, alias="keywords"),
+    study_goal: Optional[str] = Header(None, alias="study-goal")
 ):
     contents = await file.read()
     filename = file.filename.lower()
@@ -73,5 +76,5 @@ async def upload_and_generate(
     else:
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
-    flashcards = flashcard_pipeline(text, language=language)
+    flashcards = flashcard_pipeline(text, keywords, study_goal, language, detail_level)
     return {"flashcards": flashcards}

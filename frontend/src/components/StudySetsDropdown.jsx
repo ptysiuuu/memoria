@@ -13,7 +13,7 @@ export default function StudySetsDropdown({ studySets, setCards, onClose }) {
             transition={{ duration: 0.2 }}
             className="
                 absolute
-                left-20 top-40
+                left-20 top-80
                 bg-white shadow-xl border border-gray-200 rounded-lg
                 min-w-[160px] z-20
                 p-2 space-y-1 font-primary

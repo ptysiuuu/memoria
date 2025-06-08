@@ -53,45 +53,50 @@ export default function HomeComponent() {
     ];
 
     return (
-        <div className="flex justify-center items-center max-h-[80vh] pt-30 relative">
-            <SideDock
-                items={dockItems}
-                setShowStudySetsDropdown={setShowStudySetsDropdown}
-            />
-            <AnimatePresence>
-                {showStudySetsDropdown && (
-                    <StudySetsDropdown
-                        studySets={studySets}
-                        setCards={setCards}
-                        onClose={() => setShowStudySetsDropdown(false)}
-                    />
-                )}
-            </AnimatePresence>
-            <AnimatePresence mode="wait">
-                {!cards || cards.length === 0 ? (
-                    <motion.div
-                        key="form"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full max-w-md flex justify-center"
-                    >
-                        <FlashcardForm setCards={setCards} />
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        key="stack"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full max-w-3xl flex justify-center"
-                    >
-                        <FlashcardHoister cards={cards} setCards={setCards} />
-                    </motion.div>
-                )}
-            </AnimatePresence>
+        <div className="grid grid-cols-[auto_1fr] h-screen overflow-hidden">
+            <div className="relative flex justify-center items-center h-full py-4">
+                <SideDock
+                    items={dockItems}
+                    setShowStudySetsDropdown={setShowStudySetsDropdown}
+                />
+            </div>
+
+            <div className="flex justify-center items-center w-full h-full p-4 overflow-auto">
+                <AnimatePresence>
+                    {showStudySetsDropdown && (
+                        <StudySetsDropdown
+                            studySets={studySets}
+                            setCards={setCards}
+                            onClose={() => setShowStudySetsDropdown(false)}
+                        />
+                    )}
+                </AnimatePresence>
+                <AnimatePresence mode="wait">
+                    {!cards || cards.length === 0 ? (
+                        <motion.div
+                            key="form"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex justify-center w-full"
+                        >
+                            <FlashcardForm setCards={setCards} setStudySets={setStudySets} />
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="stack"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex justify-center w-full"
+                        >
+                            <FlashcardHoister cards={cards} setCards={setCards} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 }
