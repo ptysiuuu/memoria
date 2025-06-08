@@ -56,7 +56,7 @@ export default function EditPopup({ initialData, onSave, onClose }) {
                     </div>
                     <button
                         type="submit"
-                        className="w-full mt-4 px-6 py-3 cursor-pointer rounded-xl font-primary font-medium text-pink-600 border border-pink-400 hover:bg-pink-300 dark:hover:bg-pink-900 transition"
+                        className="w-full cursor-pointer mt-4 px-6 py-3 rounded-xl font-primary font-medium text-pink-600 border border-pink-400 hover:bg-pink-300 dark:hover:bg-pink-900 transition"
                     >
                         Save
                     </button>

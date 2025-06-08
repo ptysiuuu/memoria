@@ -8,6 +8,7 @@ import FlashcardForm from "./FlashcardForm";
 import SideDock from "./SideDock";
 import StudySetsDropdown from './StudySetsDropdown';
 import AddPopup from "./AddPopup";
+import ErrorPopup from "./ErrorPopup";
 
 
 const defaultCards1 = [
@@ -42,12 +43,24 @@ export default function HomeComponent() {
     const [activeSetName, setActiveSetName] = useState("Podstawy Reacta");
     const [showStudySetsDropdown, setShowStudySetsDropdown] = useState(false);
     const [showAddPopup, setShowAddPopup] = useState(false);
+    const [showErrorPopup, setShowErrorPopup] = useState(false);
+    const [errorPopupMessage, setErrorPopupMessage] = useState('');
 
     const dockItems = [
         {
             icon: <CirclePlus size={24} />,
             label: "Add a flashcard",
-            onClick: () => setShowAddPopup(true),
+            onClick: () => {
+                const currentActiveSet = studySets.find(set => set.name === activeSetName);
+
+                if (!currentActiveSet) {
+                    setErrorPopupMessage("Choose a study set.");
+                    setShowErrorPopup(true);
+                    return;
+                }
+
+                setShowAddPopup(true);
+            }
         },
         {
             icon: <ListCollapse size={24} />,
@@ -57,9 +70,17 @@ export default function HomeComponent() {
         {
             icon: <SquarePen size={24} />,
             label: "Add new study set",
-            onClick: () => setCards([]),
+            onClick: () => {
+                setCards([]);
+                setActiveSetName("");
+            },
         },
     ];
+
+    const closeErrorPopup = () => {
+        setShowErrorPopup(false);
+        setErrorPopupMessage('');
+    };
 
     const handleAddFlashcard = (newCard) => {
         setCards(prev => [...prev, newCard]);
@@ -80,6 +101,12 @@ export default function HomeComponent() {
                     onClose={() => setShowAddPopup(false)}
                 />
             )}
+            <ErrorPopup
+                message={errorPopupMessage}
+                isVisible={showErrorPopup}
+                onClose={closeErrorPopup}
+                duration={5000}
+            />
             <div className="relative flex justify-center items-center h-full py-4">
                 <SideDock
                     items={dockItems}

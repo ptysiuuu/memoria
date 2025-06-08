@@ -14,7 +14,7 @@ export default function StudySetsDropdown({ studySets, setCards, onClose, setAct
             className="
                 absolute
                 left-20 top-80
-                bg-white shadow-xl border border-gray-200 rounded-lg
+                bg-black shadow-xl border border-gray-200 rounded-lg
                 min-w-[160px] z-20
                 p-2 space-y-1 font-primary
                 "
@@ -24,7 +24,7 @@ export default function StudySetsDropdown({ studySets, setCards, onClose, setAct
             {studySets.map((set, idx) => (
                 <button
                     key={idx}
-                    className="w-full text-left px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 cursor-pointer rounded-md transition duration-150 ease-in-out"
+                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-stone-800 cursor-pointer rounded-md transition duration-150 ease-in-out"
                     onClick={() => {
                         setCards(set.cards);
                         setActiveSetName(set.name);
