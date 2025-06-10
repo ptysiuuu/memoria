@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import StarBorder from './StarBorder';
 
-const ErrorPopup = ({ message, isVisible, onClose, duration = 3000 }) => {
+const ErrorPopup = ({ message, isVisible, onClose, duration = 2000 }) => {
     useEffect(() => {
         let timer;
         if (isVisible) {

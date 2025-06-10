@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ListCollapse, SquarePen, CirclePlus, FileDown } from 'lucide-react';
+import { ListCollapse, SquarePen, CirclePlus, FileDown, LogOut } from 'lucide-react';
 
 import FlashcardHoister from "./FlashcardHoister";
 import FlashcardForm from "./FlashcardForm";
@@ -81,6 +81,11 @@ export default function HomeComponent() {
             icon: <FileDown size={24} />,
             label: "Export a set",
             onClick: () => setShowExportPopup(prev => !prev),
+        },
+        {
+            icon: <LogOut size={24} />,
+            label: "Logout",
+            onClick: () => console.log("logged out"),
         }
     ];
 
