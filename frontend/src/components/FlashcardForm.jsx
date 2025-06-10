@@ -1,7 +1,7 @@
-// FlashcardForm.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import { LoaderCircle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 
 import Stepper, { Step } from "./Stepper";
 import RotatingText from "./RotatingText";
@@ -10,30 +10,26 @@ const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function FlashcardForm({ setCards, setStudySets }) {
     const [formData, setFormData] = useState({
-        studySetName: "", // Przeniesione na początek
+        studySetName: "",
         language: "en",
         detailLevel: 3,
         keywords: "",
         studyGoal: "understanding",
-        file: null, // Przeniesione na koniec
+        file: null,
     });
     const [isLoading, setIsLoading] = useState(false);
-    const [canProceedToNextStep, setCanProceedToNextStep] = useState(true); // Stan do walidacji bieżącego kroku
-    const [currentStepperStep, setCurrentStepperStep] = useState(1); // Dodajemy stan do śledzenia aktualnego kroku Steppera
+    const [canProceedToNextStep, setCanProceedToNextStep] = useState(true);
+    const [currentStepperStep, setCurrentStepperStep] = useState(1);
 
-    // Efekt do walidacji bieżącego kroku
     useEffect(() => {
         let isValid = true;
         if (currentStepperStep === 1) {
-            // Walidacja dla kroku 1: Nazwa zestawu
             isValid = formData.studySetName.trim() !== "";
         } else if (currentStepperStep === 3) {
-            // Walidacja dla kroku 3 (gdzie teraz będzie plik)
             isValid = !!formData.file;
         }
-        // Możesz dodać walidację dla innych kroków, jeśli potrzebujesz
         setCanProceedToNextStep(isValid);
-    }, [formData, currentStepperStep]); // Zależności: formData i currentStepperStep
+    }, [formData, currentStepperStep]);
 
     const handleInputChange = (e) => {
         const { name, value, type, files } = e.target;
@@ -269,18 +265,28 @@ export default function FlashcardForm({ setCards, setStudySets }) {
                     transition={{ duration: 0.4 }}
                     className="flex flex-col items-center justify-center mb-50"
                 >
-                    <RotatingText
-                        texts={['Creating', 'Your', 'Flashcards']}
-                        mainClassName="px-2 sm:px-2 md:px-3 text-6xl dark:text-white text-center dark:text-white py-0.5 sm:py-5 md:py-10 justify-center rounded-lg font-primary"
-                        staggerFrom={"last"}
-                        initial={{ y: "100%" }}
-                        animate={{ y: 0 }}
-                        exit={{ y: "-120%" }}
-                        staggerDuration={0.025}
-                        splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
-                        transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                        rotationInterval={2000}
-                    />
+                    <LayoutGroup>
+                        <motion.p layout className="flex items-center justify-center text-6xl text-black dark:text-stone-200 font-primary">
+                            <RotatingText
+                                texts={["Creating", "Personalising", "Improving"]}
+                                mainClassName="inline-block overflow-hidden"
+                                staggerFrom={"last"}
+                                initial={{ y: "100%", x: "30%", opacity: 0 }}
+                                animate={{ y: 0, x: 0, opacity: 1 }}
+                                exit={{ y: "-120%", x: "-10%", opacity: 0 }}
+                                staggerDuration={0.025}
+                                splitLevelClassName="inline-block pb-1"
+                                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                                rotationInterval={2000}
+                            />
+                            <motion.span
+                                layout
+                                className="ml-3 px-4 py-2 rounded-xl bg-purple-500 text-white dark:text-black shadow-lg"
+                            >
+                                your flashcards
+                            </motion.span>
+                        </motion.p>
+                    </LayoutGroup>
                     <LoaderCircle className="w-16 h-16 animate-spin dark:text-white mt-6" />
                 </motion.div>
             )}
