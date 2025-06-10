@@ -197,9 +197,6 @@ export default function FlashcardForm({ setCards, setStudySets }) {
                                         leftIcon={<span className="text-gray-400 text-sm">General</span>}
                                         rightIcon={<span className="text-gray-400 text-sm">Detailed</span>}
                                         className="w-full"
-                                    // We need a way for ElasticSlider to communicate its value change
-                                    // For now, we'll assume ElasticSlider internally updates a value
-                                    // If ElasticSlider needs to output its value, it needs an `onChange` prop
                                     />
                                 </div>
                             </div>
