@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ListCollapse, SquarePen, CirclePlus } from 'lucide-react';
+import { ListCollapse, SquarePen, CirclePlus, FileDown } from 'lucide-react';
 
 import FlashcardHoister from "./FlashcardHoister";
 import FlashcardForm from "./FlashcardForm";
@@ -9,6 +9,7 @@ import SideDock from "./SideDock";
 import StudySetsDropdown from './StudySetsDropdown';
 import AddPopup from "./AddPopup";
 import ErrorPopup from "./ErrorPopup";
+import ExportPopup from "./ExportPopup";
 
 
 const defaultCards1 = [
@@ -43,6 +44,7 @@ export default function HomeComponent() {
     const [activeSetName, setActiveSetName] = useState("Podstawy Reacta");
     const [showStudySetsDropdown, setShowStudySetsDropdown] = useState(false);
     const [showAddPopup, setShowAddPopup] = useState(false);
+    const [showExportPopup, setShowExportPopup] = useState(false);
     const [showErrorPopup, setShowErrorPopup] = useState(false);
     const [errorPopupMessage, setErrorPopupMessage] = useState('');
 
@@ -75,11 +77,21 @@ export default function HomeComponent() {
                 setActiveSetName("");
             },
         },
+        {
+            icon: <FileDown size={24} />,
+            label: "Export a set",
+            onClick: () => setShowExportPopup(prev => !prev),
+        }
     ];
 
     const closeErrorPopup = () => {
         setShowErrorPopup(false);
         setErrorPopupMessage('');
+    };
+
+    const handleExportError = (message) => {
+        setShowErrorPopup(true);
+        setErrorPopupMessage(message);
     };
 
     const handleAddFlashcard = (newCard) => {
@@ -99,6 +111,13 @@ export default function HomeComponent() {
                 <AddPopup
                     onSave={handleAddFlashcard}
                     onClose={() => setShowAddPopup(false)}
+                />
+            )}
+            {showExportPopup && (
+                <ExportPopup
+                    studySets={studySets}
+                    onClose={() => setShowExportPopup(false)}
+                    onError={handleExportError}
                 />
             )}
             <ErrorPopup

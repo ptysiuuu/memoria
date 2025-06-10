@@ -1,0 +1,193 @@
+import { useState } from 'react';
+import { X } from "lucide-react";
+
+export default function ExportPopup({ studySets, onClose, onError }) {
+    const [selectedSet, setSelectedSet] = useState('');
+    const [selectedFormat, setSelectedFormat] = useState('csv');
+    const [selectedSeparator, setSelectedSeparator] = useState(',');
+
+    const exportAsCsv = (cards, setName, separator) => {
+        if (!cards || cards.length === 0) {
+            onError('The selected set has no flashcards to export.');
+            return;
+        }
+
+        const headers = ["question", "answer"];
+        const csvRows = cards.map(card => {
+            const escapedQuestion = `"${card.question.replace(/"/g, '""')}"`;
+            const escapedAnswer = `"${card.answer.replace(/"/g, '""')}"`;
+            return [escapedQuestion, escapedAnswer].join(separator);
+        });
+
+        const csvContent = [
+            headers.join(separator),
+            ...csvRows
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${setName || 'flashcards'}_export.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const exportAsJson = (cards, setName) => {
+        if (!cards || cards.length === 0) {
+            onError('The selected set has no flashcards to export.');
+            return;
+        }
+
+        const dataToExport = cards.map(card => ({
+            question: card.question,
+            answer: card.answer
+        }));
+
+        const jsonContent = JSON.stringify(dataToExport, null, 2);
+
+        const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${setName || 'flashcards'}_export.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleExport = () => {
+        const selectedStudySet = studySets.find(set => set.name === selectedSet);
+
+        if (!selectedStudySet) {
+            onError('Please select a flashcard set.');
+            return;
+        }
+
+        if (selectedFormat === 'csv') {
+            exportAsCsv(selectedStudySet.cards, selectedStudySet.name, selectedSeparator);
+        } else if (selectedFormat === 'json') {
+            exportAsJson(selectedStudySet.cards, selectedStudySet.name);
+        }
+
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center font-primary">
+            <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl w-full max-w-md relative shadow-2xl border dark:border-zinc-700">
+                <button
+                    className="absolute top-4 right-4 text-zinc-500 hover:text-red-500 cursor-pointer"
+                    onClick={onClose}
+                >
+                    <X />
+                </button>
+                <h2 className="text-2xl font-bold mb-4 text-zinc-800 dark:text-zinc-100">Export Flashcards</h2>
+
+                <div className="space-y-4">
+                    <div>
+                        <label
+                            htmlFor="set-select"
+                            className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300"
+                        >
+                            Select a set:
+                        </label>
+                        <select
+                            id="set-select"
+                            value={selectedSet}
+                            onChange={(e) => setSelectedSet(e.target.value)}
+                            className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800"
+                        >
+                            <option value="" disabled>-- Select a set --</option>
+                            {studySets.map((set) => (
+                                <option key={set.name} value={set.name}>
+                                    {set.name} ({set.cards.length} flashcards)
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">
+                            Select export format:
+                        </label>
+                        <div className="flex space-x-4">
+                            <label className="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    name="export-format"
+                                    value="csv"
+                                    checked={selectedFormat === 'csv'}
+                                    onChange={() => setSelectedFormat('csv')}
+                                    className="form-radio text-pink-600"
+                                />
+                                <span className="ml-2 text-zinc-700 dark:text-zinc-300">CSV</span>
+                            </label>
+                            <label className="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    name="export-format"
+                                    value="json"
+                                    checked={selectedFormat === 'json'}
+                                    onChange={() => setSelectedFormat('json')}
+                                    className="form-radio text-pink-600"
+                                />
+                                <span className="ml-2 text-zinc-700 dark:text-zinc-300">JSON</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {selectedFormat === 'csv' && (
+                        <div>
+                            <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">
+                                Select CSV separator:
+                            </label>
+                            <div className="flex space-x-4">
+                                <label className="inline-flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="csv-separator"
+                                        value=","
+                                        checked={selectedSeparator === ','}
+                                        onChange={() => setSelectedSeparator(',')}
+                                        className="form-radio text-pink-600"
+                                    />
+                                    <span className="ml-2 text-zinc-700 dark:text-zinc-300">Comma (,)</span>
+                                </label>
+                                <label className="inline-flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="csv-separator"
+                                        value=";"
+                                        checked={selectedSeparator === ';'}
+                                        onChange={() => setSelectedSeparator(';')}
+                                        className="form-radio text-pink-600"
+                                    />
+                                    <span className="ml-2 text-zinc-700 dark:text-zinc-300">Semicolon (;)</span>
+                                </label>
+                                <label className="inline-flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="csv-separator"
+                                        value=" "
+                                        checked={selectedSeparator === ' '}
+                                        onChange={() => setSelectedSeparator(' ')}
+                                        className="form-radio text-pink-600"
+                                    />
+                                    <span className="ml-2 text-zinc-700 dark:text-zinc-300">Space ( )</span>
+                                </label>
+                            </div>
+                        </div>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={handleExport}
+                        className="w-full cursor-pointer mt-4 px-6 py-3 rounded-xl font-primary font-medium text-pink-600 border border-pink-400 hover:bg-pink-300 dark:hover:bg-pink-900 transition"
+                    >
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
