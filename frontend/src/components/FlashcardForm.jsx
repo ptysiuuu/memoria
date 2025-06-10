@@ -5,6 +5,7 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 
 import Stepper, { Step } from "./Stepper";
 import RotatingText from "./RotatingText";
+import ElasticSlider from "./ElasticSlider";
 
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -187,24 +188,19 @@ export default function FlashcardForm({ setCards, setStudySets }) {
                                     <label htmlFor="detailLevel" className="text-lg font-medium text-gray-200 block mb-2">
                                         Detail Level:
                                     </label>
-                                    <input
-                                        type="range"
-                                        id="detailLevel"
-                                        name="detailLevel"
-                                        min="1"
-                                        max="5"
-                                        step="1"
-                                        value={formData.detailLevel}
-                                        onChange={(e) => handleDetailLevelChange(e.target.value)}
-                                        className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                                    <ElasticSlider
+                                        defaultValue={formData.detailLevel}
+                                        startingValue={1}
+                                        maxValue={5}
+                                        isStepped={true}
+                                        stepSize={1}
+                                        leftIcon={<span className="text-gray-400 text-sm">General</span>}
+                                        rightIcon={<span className="text-gray-400 text-sm">Detailed</span>}
+                                        className="w-full"
+                                    // We need a way for ElasticSlider to communicate its value change
+                                    // For now, we'll assume ElasticSlider internally updates a value
+                                    // If ElasticSlider needs to output its value, it needs an `onChange` prop
                                     />
-                                    <div className="flex justify-between text-sm text-gray-400 mt-2">
-                                        <span>1 (General)</span>
-                                        <span>2</span>
-                                        <span className="mx-7">3 (Standard)</span>
-                                        <span>4</span>
-                                        <span>5 (Detailed)</span>
-                                    </div>
                                 </div>
                             </div>
                         </Step>
