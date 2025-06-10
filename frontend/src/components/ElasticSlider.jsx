@@ -190,7 +190,7 @@ function Slider({
                     {rightIcon}
                 </motion.div>
             </motion.div>
-            <p className="absolute text-gray-400 transform -translate-y-4 text-md font-medium tracking-wide mb-1">
+            <p className="absolute text-white transform -translate-y-4 text-md font-medium tracking-wide mb-1">
                 {Math.round(value)}
             </p>
         </>

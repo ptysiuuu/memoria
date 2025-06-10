@@ -6,6 +6,7 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import Stepper, { Step } from "./Stepper";
 import RotatingText from "./RotatingText";
 import ElasticSlider from "./ElasticSlider";
+import ErrorPopup from "./ErrorPopup";
 
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -21,34 +22,56 @@ export default function FlashcardForm({ setCards, setStudySets }) {
     const [isLoading, setIsLoading] = useState(false);
     const [canProceedToNextStep, setCanProceedToNextStep] = useState(true);
     const [currentStepperStep, setCurrentStepperStep] = useState(1);
+    const [showErrorPopup, setShowErrorPopup] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         let isValid = true;
         if (currentStepperStep === 1) {
             isValid = formData.studySetName.trim() !== "";
         } else if (currentStepperStep === 3) {
-            isValid = !!formData.file;
+            isValid = !!formData.file && !showErrorPopup;
         }
         setCanProceedToNextStep(isValid);
-    }, [formData, currentStepperStep]);
+    }, [formData, currentStepperStep, showErrorPopup]);
 
     const handleInputChange = (e) => {
         const { name, value, type, files } = e.target;
+
+        if (type === 'file' && files[0]) {
+            const file = files[0];
+            const allowedExtensions = ['.pdf', '.docx', '.txt'];
+            const fileName = file.name;
+            const fileExtension = '.' + fileName.split('.').pop().toLowerCase();
+
+            if (!allowedExtensions.includes(fileExtension)) {
+                setErrorMessage('Unallowed file format. Allowed formats are: .pdf, .docx, .txt');
+                setShowErrorPopup(true);
+                e.target.value = null;
+                setFormData(prevData => ({
+                    ...prevData,
+                    [name]: null
+                }));
+                return;
+            } else {
+                setErrorMessage('');
+                setShowErrorPopup(false);
+            }
+        }
+
         setFormData(prevData => ({
             ...prevData,
             [name]: type === 'file' ? files[0] : value
         }));
     };
 
-    const handleDetailLevelChange = (value) => {
-        setFormData(prevData => ({
-            ...prevData,
-            detailLevel: Number(value)
-        }));
-    };
-
     const handleStepChange = (newStep) => {
         setCurrentStepperStep(newStep);
+    };
+
+    const handleCloseErrorPopup = () => {
+        setShowErrorPopup(false);
+        setErrorMessage('');
     };
 
     const handleSubmit = async () => {
@@ -194,8 +217,8 @@ export default function FlashcardForm({ setCards, setStudySets }) {
                                         maxValue={5}
                                         isStepped={true}
                                         stepSize={1}
-                                        leftIcon={<span className="text-gray-400 text-sm">General</span>}
-                                        rightIcon={<span className="text-gray-400 text-sm">Detailed</span>}
+                                        leftIcon={<span className="text-white text-sm">General</span>}
+                                        rightIcon={<span className="text-white text-sm">Detailed</span>}
                                         className="w-full"
                                     />
                                 </div>
@@ -283,6 +306,11 @@ export default function FlashcardForm({ setCards, setStudySets }) {
                     <LoaderCircle className="w-16 h-16 animate-spin dark:text-white mt-6" />
                 </motion.div>
             )}
+            <ErrorPopup
+                message={errorMessage}
+                isVisible={showErrorPopup}
+                onClose={handleCloseErrorPopup}
+            />
         </AnimatePresence>
     );
 }
