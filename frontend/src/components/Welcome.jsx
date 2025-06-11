@@ -36,7 +36,7 @@ export default function Welcome() {
                 </p>
 
                 <div className="flex gap-6">
-                    <Link to="/register">
+                    <Link to="/auth">
                         <Magnet magnetStrength={8}>
                             <button className="px-6 py-3 cursor-pointer rounded-xl font-medium text-white bg-pink-500 hover:bg-pink-600 opacity-0 shadow-lg transition font-primary animate-fade-in-delay-5">
                                 Get Started
