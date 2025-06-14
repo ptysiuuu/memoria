@@ -2,22 +2,31 @@ import { useState } from "react";
 
 import { Chrome } from 'lucide-react';
 
+import ErrorPopup from './ErrorPopup';
+
 const SignupForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Signup data:", { email, password, repeatPassword });
     if (password !== repeatPassword) {
-      console.log("Passwords do not match!");
+      setErrorMessage("The passwords don't match!");
+      setShowErrorPopup(true);
     }
   };
 
   const handleGoogleRegister = () => {
     // Mock function for Google registration
     console.log("Initiating Google registration...");
+  };
+
+  const handleCloseErrorPopup = () => {
+    setShowErrorPopup(false);
+    setErrorMessage('');
   };
 
   return (
@@ -90,7 +99,7 @@ const SignupForm = () => {
 
                 <button
                   type="submit"
-                  className="mt-12 px-8 py-4 uppercase rounded-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-semibold text-center w-full focus:outline-none focus:ring focus:ring-offset-2 focus:ring-indigo-500 focus:ring-opacity-80 cursor-pointer transition-colors duration-200"
+                  className="w-full cursor-pointer mt-4 px-6 py-3 rounded-full font-primary font-medium bg-white text-black border border-black hover:bg-stone-300 dark:hover:bg-stone-400 transition"
                 >
                   Sign up
                 </button>
@@ -99,7 +108,7 @@ const SignupForm = () => {
               <button
                 type="button"
                 onClick={handleGoogleRegister}
-                className="mt-4 px-8 py-4 uppercase rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 font-semibold text-center w-full focus:outline-none focus:ring focus:ring-offset-2 focus:ring-gray-400 focus:ring-opacity-80 cursor-pointer transition-colors duration-200 flex items-center justify-center space-x-2"
+                className="mt-4 px-8 py-4 rounded-full font-medium bg-white text-black border border-black hover:bg-stone-300 dark:hover:bg-stone-400 w-full flex items-center justify-center space-x-2 cursor-pointer focus:outline-none focus:ring focus:ring-offset-2 focus:ring-#A9B0C3 focus:ring-opacity-80 transition-colors duration-200"
               >
                 <Chrome size={20} />
                 <span>Register with Google</span>
@@ -108,6 +117,11 @@ const SignupForm = () => {
           </div>
         </div>
       </div>
+      <ErrorPopup
+        message={errorMessage}
+        isVisible={showErrorPopup}
+        onClose={handleCloseErrorPopup}
+      />
     </div>
   );
 };

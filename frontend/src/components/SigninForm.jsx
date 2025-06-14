@@ -49,7 +49,7 @@ const SigninForm = () => {
                 <input
                   type="submit"
                   value="Sign in"
-                  className="mt-20 px-8 py-4 uppercase rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-center block w-full focus:outline-none focus:ring focus:ring-offset-2 focus:ring-indigo-500 focus:ring-opacity-80 cursor-pointer"
+                  className="w-full cursor-pointer mt-4 px-6 py-3 rounded-full font-primary font-medium bg-white text-black border border-black hover:bg-stone-300 dark:hover:bg-stone-400 transition"
                 />
               </form>
               <a
