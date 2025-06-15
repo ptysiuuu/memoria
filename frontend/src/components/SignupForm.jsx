@@ -1,10 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 import { Chrome } from 'lucide-react';
+import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '../config/firebase';
 
 import ErrorPopup from './ErrorPopup';
 
 const SignupForm = () => {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
@@ -16,13 +21,30 @@ const SignupForm = () => {
     if (password !== repeatPassword) {
       setErrorMessage("The passwords don't match!");
       setShowErrorPopup(true);
+      return;
+    }
+    signIn();
+  };
+
+  const signIn = async () => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      navigate("/home");
+    } catch (error) {
+      console.log(error);
+      setErrorMessage(error.message);
+      setShowErrorPopup(true);
     }
   };
 
-  const handleGoogleRegister = () => {
-    // Mock function for Google registration
-    console.log("Initiating Google registration...");
-  };
+  const signInGoogle = async () => {
+    try {
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      navigate("/home");
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const handleCloseErrorPopup = () => {
     setShowErrorPopup(false);
@@ -35,8 +57,8 @@ const SignupForm = () => {
         <div className="p-8 flex-1">
           <div className="mx-auto overflow-hidden">
             <div className="p-8">
-              <h1 className="text-4xl sm:text-5xl font-bold text-indigo-600 dark:text-indigo-400">
-                Create Account
+              <h1 className="text-4xl sm:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 dark:bg-gradient-to-r dark:from-pink-300 dark:via-pink-400">
+                Create an Account
               </h1>
 
               <form className="mt-8 sm:mt-12" onSubmit={handleSubmit}>
@@ -101,13 +123,13 @@ const SignupForm = () => {
                   type="submit"
                   className="w-full cursor-pointer mt-4 px-6 py-3 rounded-full font-primary font-medium bg-white text-black border border-black hover:bg-stone-300 dark:hover:bg-stone-400 transition"
                 >
-                  Sign up
+                  Register
                 </button>
               </form>
 
               <button
                 type="button"
-                onClick={handleGoogleRegister}
+                onClick={signInGoogle}
                 className="mt-4 px-8 py-4 rounded-full font-medium bg-white text-black border border-black hover:bg-stone-300 dark:hover:bg-stone-400 w-full flex items-center justify-center space-x-2 cursor-pointer focus:outline-none focus:ring focus:ring-offset-2 focus:ring-#A9B0C3 focus:ring-opacity-80 transition-colors duration-200"
               >
                 <Chrome size={20} />

@@ -13,6 +13,7 @@
     "@headlessui/react": "^2.2.4",
     "@react-three/fiber": "^9.1.2",
     "@tailwindcss/vite": "^4.1.8",
+    "firebase": "^11.9.1",
     "framer-motion": "^12.16.0",
     "gsap": "^3.13.0",
     "lucide-react": "^0.513.0",

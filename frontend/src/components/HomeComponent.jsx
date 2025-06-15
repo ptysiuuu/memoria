@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ListCollapse, SquarePen, CirclePlus, FileDown, LogOut } from 'lucide-react';
+
+import { signOut } from 'firebase/auth';
+import { auth, db } from '../config/firebase';
+import { getDocs, collection, query, where, } from "firebase/firestore";
+import { useNavigate } from 'react-router-dom';
+
 
 import FlashcardHoister from "./FlashcardHoister";
 import FlashcardForm from "./FlashcardForm";
@@ -10,71 +16,88 @@ import StudySetsDropdown from './StudySetsDropdown';
 import AddPopup from "./AddPopup";
 import ErrorPopup from "./ErrorPopup";
 import ExportPopup from "./ExportPopup";
+import ConfirmPopup from './ConfirmPopup.jsx';
 
-
-const defaultCards1 = [
-    { id: '1', question: "Co to jest React?", answer: "Biblioteka JavaScript do budowania interfejsów użytkownika." },
-    { id: '2', question: "Co to jest komponent?", answer: "Niezależna i wielokrotnego użytku część interfejsu." },
-    { id: '3', question: "Do czego służy useEffect?", answer: "Do wykonywania efektów ubocznych w komponentach funkcyjnych." },
-    { id: '4', question: "Co to jest JSX?", answer: "Składnia rozszerzająca JavaScript, służąca do opisywania struktury UI." },
-    { id: '5', question: "W czym pomaga Framer Motion?", answer: "W tworzeniu płynnych animacji w React." },
-    { id: '6', question: "Czym jest Prop Drilling?", answer: "Sytuacja, w której dane są przekazywane przez wiele warstw komponentów do miejsca, gdzie są potrzebne." },
-    { id: '7', question: "Co to jest useState?", answer: "Hook w React, który pozwala na dodawanie stanu do komponentów funkcyjnych." },
-    { id: '8', question: "Do czego służy useRef?", answer: "Hook w React, który pozwala na tworzenie refencji do elementów DOM lub wartości, które nie wywołują ponownego renderowania." },
-];
-
-const defaultCards2 = [
-    { id: '9', question: "Co to jest Virtual DOM?", answer: "Lekka kopia prawdziwego DOM, używana przez React do optymalizacji aktualizacji UI." },
-    { id: '10', question: "Czym jest Context API?", answer: "Sposób na przekazywanie danych przez drzewo komponentów bez konieczności przekazywania propsów ręcznie na każdym poziomie." },
-    { id: '11', question: "Jakie są korzyści z używania React?", answer: "Deklaratywny interfejs, wydajność dzięki Virtual DOM, komponentowa architektura, duża społeczność." },
-    { id: '12', question: "Co to jest callback function?", answer: "Funkcja przekazywana do innej funkcji jako argument, która ma być wykonana później." },
-    { id: '13', question: "Co to jest Higher-Order Component (HOC)?", answer: "Funkcja, która przyjmuje komponent jako argument i zwraca nowy komponent z dodatkową funkcjonalnością." },
-    { id: '14', question: "Czym różni się 'let' od 'const'?", answer: "'let' pozwala na ponowne przypisanie wartości, 'const' tworzy stałą, której nie można zmienić po deklaracji." },
-    { id: '15', question: "Co to jest asynchroniczny JavaScript?", answer: "Kod, który nie blokuje głównego wątku wykonania programu, pozwalając na kontynuowanie innych operacji." },
-]
-
-const defaultSets = [
-    { name: "Podstawy Reacta", cards: defaultCards1 },
-    { name: "Zaawansowany React", cards: defaultCards2 },
-];
 
 export default function HomeComponent() {
-    const [cards, setCards] = useState(defaultCards1);
-    const [studySets, setStudySets] = useState(defaultSets)
-    const [activeSetName, setActiveSetName] = useState("Podstawy Reacta");
+    const navigate = useNavigate();
+
+    const [cards, setCards] = useState([]);
+    const [studySets, setStudySets] = useState([]);
+    const [activeSetId, setActiveSetId] = useState(null);
     const [showStudySetsDropdown, setShowStudySetsDropdown] = useState(false);
     const [showAddPopup, setShowAddPopup] = useState(false);
     const [showExportPopup, setShowExportPopup] = useState(false);
     const [showErrorPopup, setShowErrorPopup] = useState(false);
     const [errorPopupMessage, setErrorPopupMessage] = useState('');
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-    const dockItems = [
+    const activeSet = studySets.find(set => set.id === activeSetId);
+    const activeSetName = activeSet ? activeSet.name : "";
+
+    useEffect(() => {
+        const fetchStudySets = async () => {
+            try {
+                const userId = auth.currentUser?.uid;
+                if (!userId) {
+                    console.warn("User not logged in");
+                    setStudySets([]);
+                    return;
+                }
+
+                const q = query(
+                    collection(db, "studySets"),
+                    where("userId", "==", userId)
+                );
+
+                const querySnapshot = await getDocs(q);
+                const sets = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                setStudySets(sets);
+            } catch (error) {
+                console.error("Failed to fetch study sets:", error);
+            }
+        };
+
+        fetchStudySets();
+    }, []);
+
+    const dockItems = useMemo(() => [
         {
             icon: <CirclePlus size={24} />,
             label: "Add a flashcard",
             onClick: () => {
-                const currentActiveSet = studySets.find(set => set.name === activeSetName);
-
+                const currentActiveSet = studySets.find(set => set.id === activeSetId);
                 if (!currentActiveSet) {
                     setErrorPopupMessage("Choose a study set.");
                     setShowErrorPopup(true);
                     return;
                 }
-
                 setShowAddPopup(true);
             }
         },
         {
             icon: <ListCollapse size={24} />,
             label: "Show study sets",
-            onClick: () => setShowStudySetsDropdown(prev => !prev),
+            onClick: () => {
+                console.log("Clicked Show Study Sets, current studySets:", studySets);
+                if (studySets.length !== 0) {
+                    setShowStudySetsDropdown(prev => !prev);
+                    return;
+                }
+                setErrorPopupMessage("You don't have any study sets!")
+                setShowErrorPopup(true);
+            },
         },
         {
             icon: <SquarePen size={24} />,
             label: "Add new study set",
             onClick: () => {
                 setCards([]);
-                setActiveSetName("");
+                setActiveSetId(null);
             },
         },
         {
@@ -85,9 +108,9 @@ export default function HomeComponent() {
         {
             icon: <LogOut size={24} />,
             label: "Logout",
-            onClick: () => console.log("logged out"),
+            onClick: () => setShowLogoutConfirm(true)
         }
-    ];
+    ], [studySets, activeSetId]);
 
     const closeErrorPopup = () => {
         setShowErrorPopup(false);
@@ -103,7 +126,7 @@ export default function HomeComponent() {
         setCards(prev => [...prev, newCard]);
         setStudySets(prev =>
             prev.map(set =>
-                set.name === activeSetName
+                set.id === activeSetId
                     ? { ...set, cards: [...set.cards, newCard] }
                     : set
             )
@@ -116,6 +139,7 @@ export default function HomeComponent() {
                 <AddPopup
                     onSave={handleAddFlashcard}
                     onClose={() => setShowAddPopup(false)}
+                    studySetId={activeSetId}
                 />
             )}
             {showExportPopup && (
@@ -131,6 +155,19 @@ export default function HomeComponent() {
                 onClose={closeErrorPopup}
                 duration={5000}
             />
+            <ConfirmPopup
+                isVisible={showLogoutConfirm}
+                message="Are you sure you want to log out?"
+                onCancel={() => setShowLogoutConfirm(false)}
+                onConfirm={async () => {
+                    try {
+                        await signOut(auth);
+                        navigate('/auth');
+                    } catch (e) {
+                        console.error("Logout failed", e);
+                    }
+                }}
+            />
             <div className="relative flex justify-center items-center h-full py-4">
                 <SideDock
                     items={dockItems}
@@ -144,7 +181,7 @@ export default function HomeComponent() {
                         <StudySetsDropdown
                             studySets={studySets}
                             setCards={setCards}
-                            setActiveSetName={setActiveSetName}
+                            setActiveSetId={setActiveSetId}
                             onClose={() => setShowStudySetsDropdown(false)}
                         />
                     )}

@@ -121,16 +121,9 @@ export default function SideDock({
     const isHovered = useMotionValue(0);
 
     const memoizedItems = useMemo(() => {
-        return items.map(item => {
-            if (item.label === "Show study sets") {
-                return {
-                    ...item,
-                    onClick: () => setShowStudySetsDropdown(prev => !prev),
-                };
-            }
-            return item;
-        });
+        return items;
     }, [items]);
+
     return (
         <motion.div
             style={{ scrollbarWidth: "none" }}

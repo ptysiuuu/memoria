@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-export default function StudySetsDropdown({ studySets, setCards, onClose, setActiveSetName }) {
+export default function StudySetsDropdown({ studySets, setCards, onClose, setActiveSetId }) {
     if (!studySets || studySets.length === 0) {
         return null;
     }
@@ -13,7 +13,7 @@ export default function StudySetsDropdown({ studySets, setCards, onClose, setAct
             transition={{ duration: 0.2 }}
             className="
                 absolute
-                left-20 top-80
+                left-20 top-95
                 bg-black shadow-xl border border-gray-200 rounded-lg
                 min-w-[160px] z-20
                 p-2 space-y-1 font-primary
@@ -27,7 +27,7 @@ export default function StudySetsDropdown({ studySets, setCards, onClose, setAct
                     className="w-full text-left px-3 py-2 text-sm text-white hover:bg-stone-800 cursor-pointer rounded-md transition duration-150 ease-in-out"
                     onClick={() => {
                         setCards(set.cards);
-                        setActiveSetName(set.name);
+                        setActiveSetId(set.id);
                         onClose();
                     }}
                     role="menuitem"

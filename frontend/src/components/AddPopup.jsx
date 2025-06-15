@@ -1,16 +1,30 @@
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
+import { doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { db } from "../config/firebase.js";
 
-export default function AddPopup({ onSave, onClose }) {
-    const handleSubmit = (e) => {
+
+export default function AddPopup({ onSave, onClose, studySetId }) {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const question = e.target.elements.question.value.trim();
         const answer = e.target.elements.answer.value.trim();
 
         if (!question || !answer) return;
 
-        onSave({ id: crypto.randomUUID(), question, answer });
-        onClose();
+        const newCard = { id: crypto.randomUUID(), question, answer };
+
+        try {
+            const studySetRef = doc(db, "studySets", studySetId);
+            await updateDoc(studySetRef, {
+                cards: arrayUnion(newCard)
+            });
+
+            onSave(newCard);
+            onClose();
+        } catch (error) {
+            console.error("Error adding flashcard to Firestore:", error);
+        }
     };
 
     return (

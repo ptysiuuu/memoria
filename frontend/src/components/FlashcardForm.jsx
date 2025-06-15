@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 
 import { LoaderCircle } from "lucide-react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { collection, addDoc } from "firebase/firestore";
+import { db, auth } from "../config/firebase.js";
 
 import Stepper, { Step } from "./Stepper";
 import RotatingText from "./RotatingText";
@@ -80,6 +82,15 @@ export default function FlashcardForm({ setCards, setStudySets }) {
             return;
         }
         setIsLoading(true);
+        const user = auth.currentUser;
+
+        if (!user) {
+            alert("User is not logged in.");
+            setIsLoading(false);
+            return;
+        }
+
+        const userId = user.uid;
 
         const dataToSend = new FormData();
         dataToSend.append("file", formData.file);
@@ -114,6 +125,16 @@ export default function FlashcardForm({ setCards, setStudySets }) {
                     cards: cardsWithIds,
                 }
             ]);
+            try {
+                await addDoc(collection(db, "studySets"), {
+                    userId: userId,
+                    name: formData.studySetName || `Untitled Set ${prevSets.length + 1}`,
+                    cards: cardsWithIds,
+                    createdAt: new Date(),
+                });
+            } catch (firestoreError) {
+                console.error("Firestore error:", firestoreError.message);
+            }
         } catch (error) {
             console.error("Upload error:", error.message);
         }
@@ -131,6 +152,9 @@ export default function FlashcardForm({ setCards, setStudySets }) {
                     transition={{ duration: 0.3 }}
                     className="flex flex-col gap-6 items-center w-full max-w-4xl font-primary"
                 >
+                    <h2 className="text-4xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 dark:bg-gradient-to-r dark:from-pink-300 dark:via-pink-400 text-center">
+                        Create a New Study Set
+                    </h2>
                     <Stepper
                         onFinalStepCompleted={handleSubmit}
                         onStepChange={handleStepChange}

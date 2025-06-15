@@ -1,6 +1,25 @@
+import { useState, useEffect } from 'react';
+
 import logo from '../assets/memoria_logo.svg';
 
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '../config/firebase';
+
 export default function TopNavBar({ enableDarkMode, darkMode }) {
+    const [userEmail, setUserEmail] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUserEmail(user.email);
+            } else {
+                setUserEmail(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     const handleClick = () => {
         enableDarkMode(prev => !prev);
     };
@@ -22,7 +41,11 @@ export default function TopNavBar({ enableDarkMode, darkMode }) {
                         Memoria
                     </h1>
                 </div>
-
+                {userEmail && (
+                    <p className="ml-auto font-primary bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-500 dark:bg-gradient-to-r dark:from-pink-300 dark:via-pink-400 rounded-xl px-5 py-2 w-fit">
+                        Logged in as: {userEmail}
+                    </p>
+                )}
                 <button
                     className="hover:bg-gray-800 rounded-xl p-2 dark:hover:bg-stone-500 bg-black shadow-md transition duration-200 cursor-pointer dark:bg-white"
                     onClick={handleClick}

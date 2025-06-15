@@ -1,8 +1,9 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Header
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 from flashcard_agent_pipeline.agent_pipeline import flashcard_pipeline
+from auth_utils import get_current_user
 import fitz
 import docx
 import io
@@ -27,13 +28,14 @@ class FlashcardRequest(BaseModel):
 @app.post("/flashcard")
 async def create_flashcards(
     request: FlashcardRequest,
-    language: Optional[str] = Header(None)
+    language: Optional[str] = Header(None),
+    user=Depends(get_current_user)
 ):
     flashcards = flashcard_pipeline(request.text, language=language)
     return {"flashcards": flashcards}
 
 @app.post("/extract-text")
-async def extract_text(file: UploadFile = File(...)):
+async def extract_text(file: UploadFile = File(...), user=Depends(get_current_user)):
     contents = await file.read()
     filename = file.filename.lower()
 
@@ -61,7 +63,8 @@ async def upload_and_generate(
     language: Optional[str] = Header(None),
     detail_level: Optional[int] = Header(None, alias="detail-level"),
     keywords: Optional[str] = Header(None, alias="keywords"),
-    study_goal: Optional[str] = Header(None, alias="study-goal")
+    study_goal: Optional[str] = Header(None, alias="study-goal"),
+    user=Depends(get_current_user)
 ):
     contents = await file.read()
     filename = file.filename.lower()
