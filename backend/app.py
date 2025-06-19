@@ -4,9 +4,18 @@ from pydantic import BaseModel
 from typing import Optional
 from flashcard_agent_pipeline.agent_pipeline import flashcard_pipeline
 from auth_utils import get_current_user
+from firebase_admin import credentials, initialize_app
+import os
+import json
 import fitz
 import docx
 import io
+
+
+firebase_json = os.environ["FIREBASE_CREDENTIALS"]
+cred_dict = json.loads(firebase_json)
+cred = credentials.Certificate(cred_dict)
+initialize_app(cred)
 
 app = FastAPI()
 
