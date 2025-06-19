@@ -1,6 +1,11 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { deleteDoc, doc } from "firebase/firestore";
+import { db } from "../config/firebase";
+
+import ConfirmPopup from "./ConfirmPopup";
+
 
 const AnimatedItem = ({ children, delay = 0, index, onMouseEnter, onClick }) => {
     const ref = useRef(null);
@@ -29,6 +34,7 @@ const AnimatedList = ({
     itemClassName = '',
     displayScrollbar = true,
     initialSelectedIndex = -1,
+    onCardDeleteSuccess
 }) => {
     const listRef = useRef(null);
     const [selectedIndex, setSelectedIndex] = useState(initialSelectedIndex);
@@ -36,6 +42,19 @@ const AnimatedList = ({
 
     const [showTopArrow, setShowTopArrow] = useState(false);
     const [showBottomArrow, setShowBottomArrow] = useState(true);
+
+    const [cardToDelete, setCardToDelete] = useState(null);
+
+    const handleDeleteCard = async (cardId) => {
+        try {
+            await deleteDoc(doc(db, "cards", cardId));
+            if (onCardDeleteSuccess) {
+                onCardDeleteSuccess(cardId);
+            }
+        } catch (error) {
+            console.error("Error deleting card:", error);
+        }
+    };
 
     const handleScroll = () => {
         const { scrollTop, scrollHeight, clientHeight } = listRef.current;
@@ -98,58 +117,81 @@ const AnimatedList = ({
     }, [selectedIndex, keyboardNav]);
 
     return (
-        <div className={`relative w-full max-w-5xl mx-auto ${className} font-primary`}>
-            <motion.div
-                className="absolute top-0 left-0 right-0 h-[50px] flex items-center justify-center pointer-events-none z-10"
-                initial={{ opacity: 0, y: -20 }}
-                animate={showTopArrow ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-            >
-                <ArrowUp size={32} className="text-violet-500 dark:text-white animate-bounce" />
-            </motion.div>
+        <>
+            <div className={`relative w-full max-w-5xl mx-auto ${className} font-primary`}>
+                <motion.div
+                    className="absolute top-0 left-0 right-0 h-[50px] flex items-center justify-center pointer-events-none z-10"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={showTopArrow ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <ArrowUp size={32} className="text-violet-500 dark:text-white animate-bounce" />
+                </motion.div>
 
-            <div
-                ref={listRef}
-                className={`h-[65vh] overflow-y-auto p-4 ${displayScrollbar
-                    ? "[&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-track]:bg-[#060606] [&::-webkit-scrollbar-thumb]:bg-[#222] [&::-webkit-scrollbar-thumb]:rounded-[4px]"
-                    : "scrollbar-hide"
-                    }`}
-                onScroll={handleScroll}
-                style={{
-                    scrollbarWidth: displayScrollbar ? "thin" : "none",
-                    scrollbarColor: "#222 #060606",
-                }}
-            >
-                {cards.map((card, index) => (
-                    <AnimatedItem
-                        key={index}
-                        delay={0.1}
-                        index={index}
-                        onMouseEnter={() => setSelectedIndex(index)}
-                        onClick={() => {
-                            setSelectedIndex(index);
-                            if (onItemSelect) {
-                                onItemSelect(card, index);
-                            }
-                        }}
-                    >
-                        <div className={`p-6 md:p-8 lg:p-10 bg-[#111] rounded-lg ${selectedIndex === index ? 'bg-[#222]' : ''} ${itemClassName} w-full h-auto min-h-[120px] flex flex-col justify-center`}>
-                            <p className="text-white text-lg mb-2">{card.question}</p>
-                            <p className="text-gray-400 text-md">{card.answer}</p>
-                        </div>
-                    </AnimatedItem>
-                ))}
+                <div
+                    ref={listRef}
+                    className={`h-[65vh] overflow-y-auto p-4 ${displayScrollbar
+                        ? "[&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-track]:bg-[#060606] [&::-webkit-scrollbar-thumb]:bg-[#222] [&::-webkit-scrollbar-thumb]:rounded-[4px]"
+                        : "scrollbar-hide"
+                        }`}
+                    onScroll={handleScroll}
+                    style={{
+                        scrollbarWidth: displayScrollbar ? "thin" : "none",
+                        scrollbarColor: "#222 #060606",
+                    }}
+                >
+                    {cards.map((card, index) => (
+                        <AnimatedItem
+                            key={index}
+                            delay={0.1}
+                            index={index}
+                            onMouseEnter={() => setSelectedIndex(index)}
+                            onClick={() => {
+                                setSelectedIndex(index);
+                                if (onItemSelect) {
+                                    onItemSelect(card, index);
+                                }
+                            }}
+                        >
+                            <div className={`p-6 md:p-8 lg:p-10 bg-[#111] rounded-lg ${selectedIndex === index ? 'bg-[#222]' : ''} ${itemClassName} w-full h-auto min-h-[120px] flex flex-col justify-center`}>
+                                <div className="flex justify-between items-start">
+                                    <p className="text-white text-lg mb-2">{card.question}</p>
+                                    <button
+                                        className="text-red-500 hover:text-red-700 cursor-pointer"
+                                        title="Delete card"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setCardToDelete(card);
+                                        }}
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                                <p className="text-gray-400 text-md">{card.answer}</p>
+                            </div>
+                        </AnimatedItem>
+                    ))}
+                </div>
+
+                <motion.div
+                    className="absolute bottom-0 left-0 right-0 h-[50px] flex items-center justify-center pointer-events-none z-10"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={showBottomArrow ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <ArrowDown size={32} className="text-violet-500 dark:text-white animate-bounce" />
+                </motion.div>
             </div>
-
-            <motion.div
-                className="absolute bottom-0 left-0 right-0 h-[50px] flex items-center justify-center pointer-events-none z-10"
-                initial={{ opacity: 0, y: 20 }}
-                animate={showBottomArrow ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                transition={{ duration: 0.3 }}
-            >
-                <ArrowDown size={32} className="text-violet-500 dark:text-white animate-bounce" />
-            </motion.div>
-        </div>
+            <ConfirmPopup
+                isVisible={!!cardToDelete}
+                message={`Are you sure you want to delete this card?\n\n"${cardToDelete?.question}"`}
+                onConfirm={async () => {
+                    await handleDeleteCard(cardToDelete.id);
+                    setCardToDelete(null);
+                }}
+                onCancel={() => setCardToDelete(null)}
+            />
+        </>
     );
 };
 

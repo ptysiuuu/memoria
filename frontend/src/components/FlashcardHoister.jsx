@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { Switch } from '@headlessui/react';
 import { motion, AnimatePresence } from "framer-motion";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 import Stack from "./Stack";
 import AnimatedList from "./AnimatedList";
@@ -16,11 +18,28 @@ export default function FlashcardHoister({ cards, setCards, activeSetName }) {
         setEnabled(newEnabledState);
     };
 
-    const currentMode = enabled ? "learn" : "list";
-
-    const handleEditFlashcard = (card) => {
+    const handleSelect = (card) => {
         setSelectedCardToEdit(card);
         setIsEditPopupOpen(true);
+    };
+
+    const currentMode = enabled ? "learn" : "list";
+
+    const handleEditFlashcard = async (updatedCard) => {
+        try {
+            const cardRef = doc(db, "cards", updatedCard.id);
+            await updateDoc(cardRef, {
+                question: updatedCard.question,
+                answer: updatedCard.answer,
+            });
+
+            setCards(prevCards =>
+                prevCards.map(card => card.id === updatedCard.id ? updatedCard : card)
+            );
+
+        } catch (error) {
+            console.error("Error updating card in Firestore:", error);
+        }
     };
 
     const handleCloseEditPopup = () => {
@@ -74,8 +93,10 @@ export default function FlashcardHoister({ cards, setCards, activeSetName }) {
                     >
                         <AnimatedList
                             cards={cards}
-                            onItemSelect={handleEditFlashcard}
-                            displayScrollbar={false}
+                            onItemSelect={handleSelect}
+                            onCardDeleteSuccess={(deletedId) =>
+                                setCards(prev => prev.filter(card => card.id !== deletedId))
+                            }
                         />
                     </motion.div>
                 ) : (
@@ -95,7 +116,7 @@ export default function FlashcardHoister({ cards, setCards, activeSetName }) {
             {isEditPopupOpen && selectedCardToEdit && (
                 <EditPopup
                     initialData={selectedCardToEdit}
-                    onSave={handleSaveEditedFlashcard}
+                    onSave={handleEditFlashcard}
                     onClose={handleCloseEditPopup}
                 />
             )}

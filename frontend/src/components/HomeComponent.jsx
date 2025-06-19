@@ -65,12 +65,42 @@ export default function HomeComponent() {
         fetchStudySets();
     }, []);
 
+    useEffect(() => {
+        if (!activeSetId) {
+            setCards([]);
+            return;
+        }
+
+        const fetchCards = async () => {
+            try {
+                const q = query(collection(db, "cards"), where("studySetId", "==", activeSetId));
+                const querySnapshot = await getDocs(q);
+
+                const cardsData = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                setCards(cardsData);
+            } catch (err) {
+                console.error("Failed to fetch cards:", err);
+                setCards([]);
+            }
+        };
+
+        fetchCards();
+    }, [activeSetId]);
+
     const dockItems = useMemo(() => [
         {
             icon: <CirclePlus size={24} />,
             label: "Add a flashcard",
             onClick: () => {
+                console.log("activeSetId:", activeSetId);
+                console.log("studySets:", studySets);
                 const currentActiveSet = studySets.find(set => set.id === activeSetId);
+                console.log("currentActiveSet:", currentActiveSet);
+
                 if (!currentActiveSet) {
                     setErrorPopupMessage("Choose a study set.");
                     setShowErrorPopup(true);
@@ -124,14 +154,8 @@ export default function HomeComponent() {
 
     const handleAddFlashcard = (newCard) => {
         setCards(prev => [...prev, newCard]);
-        setStudySets(prev =>
-            prev.map(set =>
-                set.id === activeSetId
-                    ? { ...set, cards: [...set.cards, newCard] }
-                    : set
-            )
-        );
     };
+
 
     return (
         <div className="grid grid-cols-[auto_1fr] h-[80vh] overflow-hidden">
@@ -180,6 +204,7 @@ export default function HomeComponent() {
                     {showStudySetsDropdown && (
                         <StudySetsDropdown
                             studySets={studySets}
+                            setStudySets={setStudySets}
                             setCards={setCards}
                             setActiveSetId={setActiveSetId}
                             onClose={() => setShowStudySetsDropdown(false)}
@@ -187,7 +212,7 @@ export default function HomeComponent() {
                     )}
                 </AnimatePresence>
                 <AnimatePresence mode="wait">
-                    {!cards || cards.length === 0 ? (
+                    {!activeSetId ? (
                         <motion.div
                             key="form"
                             initial={{ opacity: 0, y: 20 }}

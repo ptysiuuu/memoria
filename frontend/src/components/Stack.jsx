@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 import CardRotate from "./CardRotate";
 import EditPopup from "./EditPopup";
@@ -15,12 +17,20 @@ export default function Stack({
     const [flippedCards, setFlippedCards] = useState({});
     const [editingCard, setEditingCard] = useState(null);
 
-    const updateCard = (id, newData) => {
-        setCards((prev) =>
-            prev.map((card) =>
-                card.id === id ? { ...card, ...newData } : card
-            )
-        );
+
+    const updateCard = async (id, newData) => {
+        try {
+            const cardRef = doc(db, "cards", id);
+            await updateDoc(cardRef, newData);
+
+            setCards((prev) =>
+                prev.map((card) =>
+                    card.id === id ? { ...card, ...newData } : card
+                )
+            );
+        } catch (error) {
+            console.error("Error updating card in Firestore:", error);
+        }
     };
 
     const toggleFlip = (id) => {

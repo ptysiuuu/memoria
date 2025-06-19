@@ -81,6 +81,7 @@ export default function FlashcardForm({ setCards, setStudySets }) {
             alert("File is missing. Cannot generate flashcards.");
             return;
         }
+
         setIsLoading(true);
         const user = auth.currentUser;
 
@@ -91,15 +92,17 @@ export default function FlashcardForm({ setCards, setStudySets }) {
         }
 
         const userId = user.uid;
-
         const dataToSend = new FormData();
         dataToSend.append("file", formData.file);
 
         try {
+            const token = await user.getIdToken();
+
             const response = await fetch(`${apiUrl}/upload-generate`, {
                 method: "POST",
                 body: dataToSend,
                 headers: {
+                    "Authorization": `Bearer ${token}`,
                     "language": formData.language,
                     "detail-level": formData.detailLevel.toString(),
                     "keywords": formData.keywords,
@@ -113,31 +116,39 @@ export default function FlashcardForm({ setCards, setStudySets }) {
             }
 
             const data = await response.json();
-            const cardsWithIds = data.flashcards.map((card, index) => ({
-                id: index + 1,
-                ...card,
-            }));
-            setCards(cardsWithIds);
-            setStudySets(prevSets => [
-                ...prevSets,
-                {
-                    name: formData.studySetName || `Untitled Set ${prevSets.length + 1}`,
-                    cards: cardsWithIds,
-                }
-            ]);
-            try {
-                await addDoc(collection(db, "studySets"), {
-                    userId: userId,
-                    name: formData.studySetName || `Untitled Set ${prevSets.length + 1}`,
-                    cards: cardsWithIds,
+
+            const studySetRef = await addDoc(collection(db, "studySets"), {
+                userId,
+                name: formData.studySetName || `Untitled Set`,
+                createdAt: new Date(),
+            });
+
+            const addedCards = [];
+            for (const card of data.flashcards) {
+                const docRef = await addDoc(collection(db, "cards"), {
+                    userId,
+                    studySetId: studySetRef.id,
+                    question: card.question,
+                    answer: card.answer,
                     createdAt: new Date(),
                 });
-            } catch (firestoreError) {
-                console.error("Firestore error:", firestoreError.message);
+                addedCards.push({ id: docRef.id, ...card });
             }
+
+            setCards(addedCards);
+            setStudySets(prev => [
+                ...prev,
+                {
+                    id: studySetRef.id,
+                    name: formData.studySetName || `Untitled Set`,
+                    cards: addedCards,
+                },
+            ]);
+
         } catch (error) {
             console.error("Upload error:", error.message);
         }
+
         setIsLoading(false);
     };
 
