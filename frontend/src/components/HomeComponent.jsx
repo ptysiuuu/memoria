@@ -169,6 +169,7 @@ export default function HomeComponent() {
             {showExportPopup && (
                 <ExportPopup
                     studySets={studySets}
+                    cards={cards}
                     onClose={() => setShowExportPopup(false)}
                     onError={handleExportError}
                 />

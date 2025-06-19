@@ -1,16 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from "lucide-react";
 
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from '../config/firebase';
+
 export default function ExportPopup({ studySets, onClose, onError }) {
     const [selectedSet, setSelectedSet] = useState('');
+    const [cards, setCards] = useState([]);
     const [selectedFormat, setSelectedFormat] = useState('csv');
     const [selectedSeparator, setSelectedSeparator] = useState(',');
     const [cardSeparator, setCardSeparator] = useState('\n');
     const [customFieldSeparator, setCustomFieldSeparator] = useState('');
     const [customCardSeparator, setCustomCardSeparator] = useState('');
 
-    const getSeparator = (preset, custom) => custom !== '' ? custom : preset;
+    const getSeparator = (preset, custom) => (custom !== '' ? custom : preset);
+
+    useEffect(() => {
+        if (!selectedSet) {
+            setCards([]);
+            return;
+        }
+
+        const fetchCards = async () => {
+            try {
+                const selectedStudySet = studySets.find(set => set.id === selectedSet);
+                if (!selectedStudySet) {
+                    onError('Selected flashcard set not found.');
+                    setCards([]);
+                    return;
+                }
+
+                const q = query(collection(db, "cards"), where("studySetId", "==", selectedSet));
+                const querySnapshot = await getDocs(q);
+
+                const cardsData = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                setCards(cardsData);
+            } catch (err) {
+                console.error("Failed to fetch cards:", err);
+                onError('Failed to fetch flashcards.');
+                setCards([]);
+            }
+        };
+
+        fetchCards();
+    }, [selectedSet, studySets, onError]);
 
     const exportAsCsv = (cards, setName, fieldSep, cardSep) => {
         if (!cards || cards.length === 0) {
@@ -60,16 +98,26 @@ export default function ExportPopup({ studySets, onClose, onError }) {
     };
 
     const handleExport = () => {
-        const selectedStudySet = studySets.find(set => set.name === selectedSet);
-        if (!selectedStudySet) {
+        if (!selectedSet) {
             onError('Please select a flashcard set.');
             return;
         }
 
+        if (!cards || cards.length === 0) {
+            onError('The selected set has no flashcards to export.');
+            return;
+        }
+
+        const selectedStudySet = studySets.find(set => set.id === selectedSet);
+        if (!selectedStudySet) {
+            onError('Selected flashcard set not found.');
+            return;
+        }
+
         if (selectedFormat === 'csv') {
-            exportAsCsv(selectedStudySet.cards, selectedStudySet.name, selectedSeparator, cardSeparator);
+            exportAsCsv(cards, selectedStudySet.name, selectedSeparator, cardSeparator);
         } else {
-            exportAsJson(selectedStudySet.cards, selectedStudySet.name);
+            exportAsJson(cards, selectedStudySet.name);
         }
 
         onClose();
@@ -100,7 +148,6 @@ export default function ExportPopup({ studySets, onClose, onError }) {
                     <h2 className="text-2xl font-bold mb-4 text-zinc-800 dark:text-zinc-100">Export Flashcards</h2>
 
                     <div className="space-y-4">
-                        {/* SET SELECTION */}
                         <div>
                             <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">
                                 Select a set:
@@ -112,14 +159,13 @@ export default function ExportPopup({ studySets, onClose, onError }) {
                             >
                                 <option value="" disabled>-- Select a set --</option>
                                 {studySets.map((set) => (
-                                    <option key={set.name} value={set.name}>
-                                        {set.name} ({set.cards.length} flashcards)
+                                    <option key={set.id} value={set.id}>
+                                        {set.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
 
-                        {/* FORMAT */}
                         <div>
                             <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">
                                 Select export format:
@@ -148,21 +194,14 @@ export default function ExportPopup({ studySets, onClose, onError }) {
                             </div>
                         </div>
 
-                        {/* CSV OPTIONS */}
                         {selectedFormat === 'csv' && (
                             <>
-                                {/* FIELD SEPARATOR */}
                                 <div>
                                     <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">
                                         Separator between question and answer:
                                     </label>
                                     <div className="flex flex-wrap gap-4">
-                                        {[
-                                            [',', 'Comma'],
-                                            [';', 'Semicolon'],
-                                            ['|', 'Pipe'],
-                                            [':', 'Colon'],
-                                        ].map(([val, label]) => (
+                                        {[[',', 'Comma'], [';', 'Semicolon'], ['|', 'Pipe'], [':', 'Colon']].map(([val, label]) => (
                                             <label key={val} className="inline-flex items-center">
                                                 <input
                                                     type="radio"
@@ -185,17 +224,12 @@ export default function ExportPopup({ studySets, onClose, onError }) {
                                     />
                                 </div>
 
-                                {/* CARD SEPARATOR */}
                                 <div>
                                     <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">
                                         Separator between flashcards:
                                     </label>
                                     <div className="flex flex-wrap gap-4">
-                                        {[
-                                            ['\n', 'Newline (\\n)'],
-                                            ['\n\n', 'Double Newline (\\n\\n)'],
-                                            ['---', 'Dashes (---)'],
-                                        ].map(([val, label]) => (
+                                        {[['\n', 'Newline (\\n)'], ['\n\n', 'Double Newline (\\n\\n)'], ['---', 'Dashes (---)']].map(([val, label]) => (
                                             <label key={val} className="inline-flex items-center">
                                                 <input
                                                     type="radio"
@@ -220,7 +254,6 @@ export default function ExportPopup({ studySets, onClose, onError }) {
                             </>
                         )}
 
-                        {/* EXPORT BUTTON */}
                         <button
                             onClick={handleExport}
                             className="w-full mt-4 px-6 py-3 cursor-pointer rounded-xl font-primary font-medium text-pink-600 border border-pink-400 hover:bg-pink-300 dark:hover:bg-pink-900 transition"
