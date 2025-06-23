@@ -1,4 +1,3 @@
-// Stepper.jsx
 import React, { useState, Children, useRef, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -69,33 +68,41 @@ export default function Stepper({
                         const isNotLastStep = index < totalSteps - 1;
                         return (
                             <React.Fragment key={stepNumber}>
-                                {renderStepIndicator ? (
-                                    renderStepIndicator({
-                                        step: stepNumber,
-                                        currentStep,
-                                        onStepClick: (clicked) => {
-                                            if (!disableStepIndicators) {
-                                                setDirection(clicked > currentStep ? 1 : -1);
-                                                updateStep(clicked);
-                                            }
-                                        },
-                                    })
-                                ) : (
-                                    <StepIndicator
-                                        step={stepNumber}
-                                        disableStepIndicators={disableStepIndicators}
-                                        currentStep={currentStep}
-                                        onClickStep={(clicked) => {
-                                            if (!disableStepIndicators) {
-                                                setDirection(clicked > currentStep ? 1 : -1);
-                                                updateStep(clicked);
-                                            }
-                                        }}
-                                    />
-                                )}
-                                {isNotLastStep && (
-                                    <StepConnector isComplete={currentStep > stepNumber} />
-                                )}
+                                <motion.div
+                                    key={`step-${stepNumber}`}
+                                    initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8, y: -10 }}
+                                    transition={{ duration: 0.3 }}
+                                    layout
+                                    style={{ zIndex: 1 }} // keep step circles above connectors
+                                >
+                                    {renderStepIndicator ? (
+                                        renderStepIndicator({
+                                            step: stepNumber,
+                                            currentStep,
+                                            onStepClick: (clicked) => {
+                                                if (!disableStepIndicators) {
+                                                    setDirection(clicked > currentStep ? 1 : -1);
+                                                    updateStep(clicked);
+                                                }
+                                            },
+                                        })
+                                    ) : (
+                                        <StepIndicator
+                                            step={stepNumber}
+                                            disableStepIndicators={disableStepIndicators}
+                                            currentStep={currentStep}
+                                            onClickStep={(clicked) => {
+                                                if (!disableStepIndicators) {
+                                                    setDirection(clicked > currentStep ? 1 : -1);
+                                                    updateStep(clicked);
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                </motion.div>
+                                {isNotLastStep && <StepConnector isComplete={currentStep > stepNumber} />}
                             </React.Fragment>
                         );
                     })}
@@ -228,11 +235,11 @@ function StepIndicator({ step, currentStep, onClickStep, disableStepIndicators }
             <motion.div
                 variants={{
                     inactive: { scale: 1, backgroundColor: "#333", color: "#a3a3a3" },
-                    active: { scale: 1, backgroundColor: "#5227FF", color: "#FFFFFF" },
+                    active: { scale: 1.15, backgroundColor: "#5227FF", color: "#FFFFFF" },
                     complete: { scale: 1, backgroundColor: "#5227FF", color: "#FFFFFF" },
                 }}
                 transition={{ duration: 0.3 }}
-                className="flex h-8 w-8 items-center justify-center rounded-full font-semibold"
+                className="flex h-8 w-8 items-center justify-center rounded-full font-semibold text-sm relative"
             >
                 {status === "complete" ? (
                     <CheckIcon className="h-4 w-4 text-white" />
@@ -245,6 +252,7 @@ function StepIndicator({ step, currentStep, onClickStep, disableStepIndicators }
         </motion.div>
     );
 }
+
 
 function StepConnector({ isComplete }) {
     const lineVariants = {

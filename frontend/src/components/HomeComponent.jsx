@@ -222,7 +222,7 @@ export default function HomeComponent() {
                             transition={{ duration: 0.3 }}
                             className="flex justify-center w-full"
                         >
-                            <FlashcardForm setCards={setCards} setStudySets={setStudySets} />
+                            <FlashcardForm setCards={setCards} setStudySets={setStudySets} setActiveSetId={setActiveSetId} />
                         </motion.div>
                     ) : (
                         <motion.div

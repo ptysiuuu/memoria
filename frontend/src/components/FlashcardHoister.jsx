@@ -97,6 +97,7 @@ export default function FlashcardHoister({ cards, setCards, activeSetName }) {
                             onCardDeleteSuccess={(deletedId) =>
                                 setCards(prev => prev.filter(card => card.id !== deletedId))
                             }
+                            canDelete={cards?.length > 1}
                         />
                     </motion.div>
                 ) : (

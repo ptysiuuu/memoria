@@ -5,7 +5,7 @@ import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 import ConfirmPopup from "./ConfirmPopup";
-
+import ErrorPopup from './ErrorPopup';
 
 const AnimatedItem = ({ children, delay = 0, index, onMouseEnter, onClick }) => {
     const ref = useRef(null);
@@ -34,7 +34,8 @@ const AnimatedList = ({
     itemClassName = '',
     displayScrollbar = true,
     initialSelectedIndex = -1,
-    onCardDeleteSuccess
+    onCardDeleteSuccess,
+    canDelete
 }) => {
     const listRef = useRef(null);
     const [selectedIndex, setSelectedIndex] = useState(initialSelectedIndex);
@@ -44,6 +45,9 @@ const AnimatedList = ({
     const [showBottomArrow, setShowBottomArrow] = useState(true);
 
     const [cardToDelete, setCardToDelete] = useState(null);
+
+    const [showErrorPopup, setShowErrorPopup] = useState(false);
+    const [errorPopupMessage, setErrorPopupMessage] = useState('');
 
     const handleDeleteCard = async (cardId) => {
         try {
@@ -116,6 +120,11 @@ const AnimatedList = ({
         setKeyboardNav(false);
     }, [selectedIndex, keyboardNav]);
 
+    const closeErrorPopup = () => {
+        setShowErrorPopup(false);
+        setErrorPopupMessage('');
+    };
+
     return (
         <>
             <div className={`relative w-full max-w-5xl mx-auto ${className} font-primary`}>
@@ -157,10 +166,15 @@ const AnimatedList = ({
                                 <div className="flex justify-between items-start">
                                     <p className="text-white text-lg mb-2">{card.question}</p>
                                     <button
-                                        className="text-red-500 hover:text-red-700 cursor-pointer"
+                                        className={`text-red-500 hover:text-red-700 cursor-pointer ${cards.length <= 1 || !canDelete ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         title="Delete card"
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            if (!canDelete || cards.length <= 1) {
+                                                setErrorPopupMessage("You can't delete the last flashcard in the set.");
+                                                setShowErrorPopup(true);
+                                                return;
+                                            }
                                             setCardToDelete(card);
                                         }}
                                     >
@@ -186,10 +200,17 @@ const AnimatedList = ({
                 isVisible={!!cardToDelete}
                 message={`Are you sure you want to delete this card?\n\n"${cardToDelete?.question}"`}
                 onConfirm={async () => {
+                    if (!cardToDelete) return;
                     await handleDeleteCard(cardToDelete.id);
                     setCardToDelete(null);
                 }}
                 onCancel={() => setCardToDelete(null)}
+            />
+            <ErrorPopup
+                message={errorPopupMessage}
+                isVisible={showErrorPopup}
+                onClose={closeErrorPopup}
+                duration={3000}
             />
         </>
     );
