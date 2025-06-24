@@ -5,6 +5,7 @@ from typing import Optional
 from flashcard_agent_pipeline.agent_pipeline import flashcard_pipeline
 from auth_utils import get_current_user
 from firebase_admin import credentials, initialize_app
+from dotenv import load_dotenv
 import os
 import json
 import fitz
@@ -12,6 +13,7 @@ import docx
 import io
 
 
+load_dotenv()
 firebase_json = os.environ["FIREBASE_CREDENTIALS"]
 cred_dict = json.loads(firebase_json)
 cred = credentials.Certificate(cred_dict)
@@ -19,9 +21,7 @@ initialize_app(cred)
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173"
-]
+origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
 
 app.add_middleware(
     CORSMiddleware,
