@@ -26,6 +26,7 @@ function DockItem({
     distance,
     magnification,
     baseItemSize,
+    disabled = false,
 }) {
     const ref = useRef(null);
     const isHovered = useMotionValue(0);
@@ -51,16 +52,19 @@ function DockItem({
             style={{
                 width: size,
                 height: size,
+                pointerEvents: disabled ? "none" : "auto",
+                opacity: disabled ? 0.5 : 1,
             }}
-            onHoverStart={() => isHovered.set(1)}
-            onHoverEnd={() => isHovered.set(0)}
-            onFocus={() => isHovered.set(1)}
-            onBlur={() => isHovered.set(0)}
-            onClick={onClick}
-            className={`relative inline-flex items-center text-primary cursor-pointer justify-center rounded-full bg-[#060606] border-neutral-700 border-2 shadow-md ${className}`}
-            tabIndex={0}
+            onHoverStart={() => !disabled && isHovered.set(1)}
+            onHoverEnd={() => !disabled && isHovered.set(0)}
+            onFocus={() => !disabled && isHovered.set(1)}
+            onBlur={() => !disabled && isHovered.set(0)}
+            onClick={!disabled ? onClick : undefined}
+            className={`relative inline-flex items-center justify-center cursor-pointer text-primary rounded-full bg-[#060606] border-neutral-700 border-2 shadow-md ${className}`}
+            tabIndex={disabled ? -1 : 0}
             role="button"
             aria-haspopup="true"
+            aria-disabled={disabled}
         >
             {Children.map(children, (child) =>
                 cloneElement(child, { isHovered })
@@ -68,6 +72,7 @@ function DockItem({
         </motion.div>
     );
 }
+
 
 function DockLabel({ children, className = "", ...rest }) {
     const { isHovered } = rest;
@@ -116,23 +121,21 @@ export default function SideDock({
     distance = 200,
     panelWidth = 64,
     baseItemSize = 50,
+    disabled = false,
 }) {
     const mouseY = useMotionValue(Infinity);
     const isHovered = useMotionValue(0);
 
-    const memoizedItems = useMemo(() => {
-        return items;
-    }, [items]);
+    const memoizedItems = useMemo(() => items, [items]);
 
     return (
-        <motion.div
-            style={{ scrollbarWidth: "none" }}
-            className="flex items-center justify-center h-full text-primary"
-        >
+        <motion.div className="flex items-center justify-center h-full text-primary">
             <motion.div
                 onMouseMove={({ pageY }) => {
-                    isHovered.set(1);
-                    mouseY.set(pageY);
+                    if (!disabled) {
+                        isHovered.set(1);
+                        mouseY.set(pageY);
+                    }
                 }}
                 onMouseLeave={() => {
                     isHovered.set(0);
@@ -153,6 +156,7 @@ export default function SideDock({
                         distance={distance}
                         magnification={magnification}
                         baseItemSize={baseItemSize}
+                        disabled={disabled}
                     >
                         <DockIcon>{item.icon}</DockIcon>
                         <DockLabel>{item.label}</DockLabel>

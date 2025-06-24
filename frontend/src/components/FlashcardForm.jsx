@@ -11,7 +11,7 @@ import ErrorPopup from "./ErrorPopup";
 
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-export default function FlashcardForm({ setCards, setStudySets, setActiveSetId }) {
+export default function FlashcardForm({ setCards, setStudySets, setActiveSetId, setIsLoading, isLoading }) {
     const [formData, setFormData] = useState({
         studySetName: "",
         language: "en",
@@ -23,7 +23,6 @@ export default function FlashcardForm({ setCards, setStudySets, setActiveSetId }
 
     const [generationMethod, setGenerationMethod] = useState(null);
 
-    const [isLoading, setIsLoading] = useState(false);
     const [canProceedToNextStep, setCanProceedToNextStep] = useState(false);
     const [currentStepperStep, setCurrentStepperStep] = useState(0);
     const [showErrorPopup, setShowErrorPopup] = useState(false);

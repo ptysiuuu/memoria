@@ -31,6 +31,7 @@ export default function HomeComponent() {
     const [showErrorPopup, setShowErrorPopup] = useState(false);
     const [errorPopupMessage, setErrorPopupMessage] = useState('');
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [loadingFlashcards, setLoadingFlashcards] = useState(false);
 
     const activeSet = studySets.find(set => set.id === activeSetId);
     const activeSetName = activeSet ? activeSet.name : "";
@@ -197,6 +198,7 @@ export default function HomeComponent() {
                 <SideDock
                     items={dockItems}
                     setShowStudySetsDropdown={setShowStudySetsDropdown}
+                    disabled={loadingFlashcards}
                 />
             </div>
 
@@ -222,7 +224,13 @@ export default function HomeComponent() {
                             transition={{ duration: 0.3 }}
                             className="flex justify-center w-full"
                         >
-                            <FlashcardForm setCards={setCards} setStudySets={setStudySets} setActiveSetId={setActiveSetId} />
+                            <FlashcardForm
+                                setCards={setCards}
+                                setStudySets={setStudySets}
+                                setActiveSetId={setActiveSetId}
+                                setIsLoading={setLoadingFlashcards}
+                                isLoading={loadingFlashcards}
+                            />
                         </motion.div>
                     ) : (
                         <motion.div
